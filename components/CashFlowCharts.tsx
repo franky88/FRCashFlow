@@ -18,6 +18,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { CashflowRecord } from "@/types/supabase";
+import type { PieLabelRenderProps } from "recharts";
 
 interface CashflowChartsProps {
   records: CashflowRecord[];
@@ -189,14 +190,16 @@ export default function CashflowCharts({ records }: CashflowChartsProps) {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
+                    label={({ name, percent }: PieLabelRenderProps) => {
+                      const safePercent =
+                        typeof percent === "number" ? percent * 100 : 0;
+                      return `${name ?? ""} ${safePercent.toFixed(0)}%`;
+                    }}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {chartData.categoryData.map((entry, index) => (
+                    {chartData.categoryData.map((_, index) => (
                       <Cell
                         key={`cell-${index}`}
                         fill={COLORS[index % COLORS.length]}

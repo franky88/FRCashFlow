@@ -29,6 +29,7 @@ export default function CashflowDashboard({ userId }: { userId: string }) {
     note: "",
     date: new Date().toISOString().split("T")[0],
   });
+  const [loading, setLoading] = useState(false);
 
   const [totals, setTotals] = useState<{ income: number; expense: number }>({
     income: 0,
