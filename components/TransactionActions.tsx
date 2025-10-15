@@ -53,6 +53,7 @@ export default function TransactionActions({
     amount: transaction.amount.toString(),
     date: transaction.date,
     note: transaction.note || "",
+    petty_cash_reference: transaction.petty_cash_reference || "",
   });
 
   async function handleUpdate() {
@@ -65,6 +66,7 @@ export default function TransactionActions({
         amount: Number(editForm.amount),
         date: editForm.date,
         note: editForm.note,
+        petty_cash_reference: editForm.petty_cash_reference,
       })
       .eq("id", transaction.id);
 
@@ -105,7 +107,7 @@ export default function TransactionActions({
           variant="ghost"
           size="sm"
           onClick={() => setIsEditOpen(true)}
-          className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
+          className="h-8 w-8 p-0 hover:bg-indigo-50 hover:text-purple-600"
         >
           <Pencil className="h-4 w-4" />
         </Button>
@@ -198,6 +200,23 @@ export default function TransactionActions({
                 placeholder="Add a note..."
               />
             </div>
+
+            <div>
+              <Label className="text-sm font-medium text-slate-700">
+                Petty Cash Ref # (Optional)
+              </Label>
+              <Input
+                value={editForm.petty_cash_reference}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    petty_cash_reference: e.target.value,
+                  })
+                }
+                className="mt-1.5"
+                placeholder="Add a petty cash ref..."
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button
@@ -210,7 +229,7 @@ export default function TransactionActions({
             <Button
               onClick={handleUpdate}
               disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white"
             >
               {isLoading ? "Saving..." : "Save Changes"}
             </Button>

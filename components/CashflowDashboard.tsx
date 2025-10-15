@@ -1,35 +1,18 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, Suspense } from "react";
 import { createClient } from "@/utils/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CurrentUser from "./CurrentUser";
 import CashflowCharts from "./CashFlowCharts";
 import TransactionsDataTable from "./TransactionsDataTable";
 import { CashflowRecord } from "@/types/supabase";
+import AddNewTransaction from "./AddNewTransaction";
 
 export default function CashflowDashboard({ userId }: { userId: string }) {
   const supabase = createClient();
   const [records, setRecords] = useState<CashflowRecord[]>([]);
-  const [form, setForm] = useState({
-    type: "income",
-    category: "",
-    amount: "",
-    note: "",
-    date: new Date().toISOString().split("T")[0],
-  });
-  const [loading, setLoading] = useState(false);
 
   const [totals, setTotals] = useState<{ income: number; expense: number }>({
     income: 0,
@@ -63,31 +46,6 @@ export default function CashflowDashboard({ userId }: { userId: string }) {
     setTotals({ income, expense });
   }
 
-  async function handleAddRecord(e: React.FormEvent) {
-    e.preventDefault();
-
-    const { error } = await supabase.from("cashflow").insert([
-      {
-        user_id: userId,
-        ...form,
-        amount: Number(form.amount),
-      },
-    ]);
-
-    if (!error) {
-      setForm({
-        type: "income",
-        category: "",
-        amount: "",
-        note: "",
-        date: new Date().toISOString().split("T")[0],
-      });
-      fetchRecords();
-    } else {
-      console.error(error);
-    }
-  }
-
   const balance = totals.income - totals.expense;
 
   return (
@@ -108,7 +66,7 @@ export default function CashflowDashboard({ userId }: { userId: string }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="border-none shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+          <Card className="border-none shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
             <CardContent className="px-4">
               <p className="text-blue-100 text-sm font-medium mb-1">
                 Total Balance
@@ -154,120 +112,46 @@ export default function CashflowDashboard({ userId }: { userId: string }) {
           </Card>
         </div>
         <Tabs defaultValue="transactions" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="transactions">Transactions</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsList className="grid grid-cols-2 bg-gradient-to-r from-indigo-50 to-purple-50 p-1 rounded-xl mb-1 h-14">
+            <TabsTrigger
+              value="transactions"
+              className="py-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg font-semibold transition-all"
+            >
+              Transactions
+            </TabsTrigger>
+            <TabsTrigger
+              value="analytics"
+              className="py-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg rounded-lg font-semibold transition-all"
+            >
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="transactions" className="mt-2">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Add Transaction Form */}
-              <div className="lg:col-span-1">
-                <Card className="border-none shadow-lg">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Add Transaction</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <form onSubmit={handleAddRecord} className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium text-slate-700">
-                          Type
-                        </Label>
-                        <Select
-                          value={form.type}
-                          onValueChange={(v) => setForm({ ...form, type: v })}
-                        >
-                          <SelectTrigger className="mt-1.5">
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="income">💰 Income</SelectItem>
-                            <SelectItem value="expense">💸 Expense</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+              <div className="lg:col-span-3">
+                <div className="flex items-center justify-between px-4 py-2 bg-white mb-2 rounded-xl">
+                  <div className="">
+                    <h3 className="font-bold px-2">Transactions</h3>
+                  </div>
 
-                      <div>
-                        <Label className="text-sm font-medium text-slate-700">
-                          Category
-                        </Label>
-                        <Input
-                          placeholder="e.g. Food, Salary"
-                          value={form.category}
-                          onChange={(e) =>
-                            setForm({ ...form, category: e.target.value })
-                          }
-                          className="mt-1.5"
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="text-sm font-medium text-slate-700">
-                          Amount
-                        </Label>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          value={form.amount}
-                          onChange={(e) =>
-                            setForm({ ...form, amount: e.target.value })
-                          }
-                          className="mt-1.5"
-                          step="0.01"
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="text-sm font-medium text-slate-700">
-                          Date
-                        </Label>
-                        <Input
-                          type="date"
-                          value={form.date}
-                          onChange={(e) =>
-                            setForm({ ...form, date: e.target.value })
-                          }
-                          className="mt-1.5"
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="text-sm font-medium text-slate-700">
-                          Note (Optional)
-                        </Label>
-                        <Input
-                          placeholder="Add a note..."
-                          value={form.note}
-                          onChange={(e) =>
-                            setForm({ ...form, note: e.target.value })
-                          }
-                          className="mt-1.5"
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        className="w-full bg-blue-600 hover:bg-blue-700"
-                      >
-                        Add Transaction
-                      </Button>
-                    </form>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Transactions Table */}
-              <div className="lg:col-span-2">
-                <TransactionsDataTable
-                  records={records}
-                  onUpdate={fetchRecords}
-                />
+                  <AddNewTransaction
+                    userId={userId}
+                    fetchRecords={fetchRecords}
+                  />
+                </div>
+                <Suspense fallback={<div>Loading data...</div>}>
+                  <TransactionsDataTable
+                    records={records}
+                    onUpdate={fetchRecords}
+                  />
+                </Suspense>
               </div>
             </div>
           </TabsContent>
 
           {/* Analytics Tab */}
-          <TabsContent value="analytics" className="mt-6">
+          <TabsContent value="analytics" className="mt-2">
             <CashflowCharts records={records} />
           </TabsContent>
         </Tabs>

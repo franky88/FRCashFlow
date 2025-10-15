@@ -162,12 +162,22 @@ export default function TransactionsDataTable({
       },
     },
     {
+      accessorKey: "petty_cash_reference",
+      enableGlobalFilter: true,
+      header: "PC Ref #",
+      cell: ({ row }) => (
+        <span className="text-sm text-slate-700">
+          {row.getValue("petty_cash_reference") || "-"}
+        </span>
+      ),
+    },
+    {
       accessorKey: "note",
       header: "Note",
       cell: ({ row }) => (
-        <div className="text-sm text-slate-500">
+        <span className="text-sm text-slate-500">
           {row.getValue("note") || "-"}
-        </div>
+        </span>
       ),
     },
     {
@@ -196,6 +206,19 @@ export default function TransactionsDataTable({
       columnFilters,
       globalFilter,
     },
+    globalFilterFn: (row, columnId, filterValue) => {
+      const value = row.getValue(columnId);
+
+      if (typeof value === "string") {
+        return value.toLowerCase().includes(filterValue.toLowerCase());
+      }
+
+      if (columnId === "petty_cash_reference" && value) {
+        return String(value).toLowerCase().includes(filterValue.toLowerCase());
+      }
+
+      return false;
+    },
     initialState: {
       pagination: {
         pageSize: 10,
@@ -219,17 +242,13 @@ export default function TransactionsDataTable({
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           {/* Global Search */}
-          <div className="sm:col-span-1">
+          <div className="sm:col-span-3 flex items-center gap-2">
             <Input
               placeholder="🔍 Search all columns..."
               value={globalFilter ?? ""}
               onChange={(e) => setGlobalFilter(e.target.value)}
               className="w-full"
             />
-          </div>
-
-          {/* Type Filter */}
-          <div>
             <Select
               value={
                 (table.getColumn("type")?.getFilterValue() as string) ?? "all"
@@ -249,48 +268,50 @@ export default function TransactionsDataTable({
                 <SelectItem value="expense">💸 Expense</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-
-          <Select
-            value={
-              (table.getColumn("category")?.getFilterValue() as string) ?? "all"
-            }
-            onValueChange={(value) =>
-              table
-                .getColumn("category")
-                ?.setFilterValue(value === "all" ? "" : value)
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="All Categories" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat} value={cat}>
-                  {cat}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-600">Rows per page:</span>
             <Select
-              value={table.getState().pagination.pageSize.toString()}
-              onValueChange={(value) => table.setPageSize(Number(value))}
+              value={
+                (table.getColumn("category")?.getFilterValue() as string) ??
+                "all"
+              }
+              onValueChange={(value) =>
+                table
+                  .getColumn("category")
+                  ?.setFilterValue(value === "all" ? "" : value)
+              }
             >
-              <SelectTrigger className="w-20">
-                <SelectValue />
+              <SelectTrigger>
+                <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                {[10, 20, 30, 50, 100].map((pageSize) => (
-                  <SelectItem key={pageSize} value={pageSize.toString()}>
-                    {pageSize}
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="ml-auto flex gap-1 items-center">
+              <span className="text-sm text-slate-600">Rows per page:</span>
+              <Select
+                value={table.getState().pagination.pageSize.toString()}
+                onValueChange={(value) => table.setPageSize(Number(value))}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[10, 20, 30, 50, 100].map((pageSize) => (
+                    <SelectItem key={pageSize} value={pageSize.toString()}>
+                      {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </CardHeader>

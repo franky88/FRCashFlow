@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LineChart,
@@ -17,6 +17,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CashflowRecord } from "@/types/supabase";
 import type { PieLabelRenderProps } from "recharts";
 
@@ -25,7 +32,8 @@ interface CashflowChartsProps {
 }
 
 export default function CashflowCharts({ records }: CashflowChartsProps) {
-  // Calculate data for charts
+  const [days, setDays] = useState(7);
+
   const chartData = useMemo(() => {
     // 1. Category breakdown (Pie Chart)
     const categoryTotals: { [key: string]: number } = {};
@@ -37,12 +45,9 @@ export default function CashflowCharts({ records }: CashflowChartsProps) {
     });
 
     const categoryData = Object.entries(categoryTotals)
-      .map(([name, value]) => ({
-        name,
-        value: Number(value.toFixed(2)),
-      }))
+      .map(([name, value]) => ({ name, value: Number(value.toFixed(2)) }))
       .sort((a, b) => b.value - a.value)
-      .slice(0, 6); // Top 6 categories
+      .slice(0, 6);
 
     // 2. Monthly trend (Line Chart)
     const monthlyData: {
@@ -93,29 +98,29 @@ export default function CashflowCharts({ records }: CashflowChartsProps) {
       { name: "Expense", amount: Number(expenseTotal.toFixed(2)) },
     ];
 
-    // 4. Recent activity (Last 7 days)
-    const last7Days: { [key: string]: { income: number; expense: number } } =
+    // 4. Recent activity (dynamic days)
+    const lastNDays: { [key: string]: { income: number; expense: number } } =
       {};
     const today = new Date();
 
-    for (let i = 6; i >= 0; i--) {
+    for (let i = days - 1; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       const dateKey = date.toISOString().split("T")[0];
-      last7Days[dateKey] = { income: 0, expense: 0 };
+      lastNDays[dateKey] = { income: 0, expense: 0 };
     }
 
     records.forEach((record) => {
-      if (last7Days[record.date]) {
+      if (lastNDays[record.date]) {
         if (record.type === "income") {
-          last7Days[record.date].income += Number(record.amount);
+          lastNDays[record.date].income += Number(record.amount);
         } else {
-          last7Days[record.date].expense += Number(record.amount);
+          lastNDays[record.date].expense += Number(record.amount);
         }
       }
     });
 
-    const weeklyData = Object.entries(last7Days).map(([date, data]) => ({
+    const weeklyData = Object.entries(lastNDays).map(([date, data]) => ({
       date: new Date(date).toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -130,7 +135,7 @@ export default function CashflowCharts({ records }: CashflowChartsProps) {
       comparisonData,
       weeklyData,
     };
-  }, [records]);
+  }, [records, days]);
 
   const COLORS = [
     "#3b82f6",
@@ -196,7 +201,6 @@ export default function CashflowCharts({ records }: CashflowChartsProps) {
                       return `${name ?? ""} ${safePercent.toFixed(0)}%`;
                     }}
                     outerRadius={80}
-                    fill="#8884d8"
                     dataKey="value"
                   >
                     {chartData.categoryData.map((_, index) => (
@@ -290,10 +294,23 @@ export default function CashflowCharts({ records }: CashflowChartsProps) {
         </CardContent>
       </Card>
 
-      {/* Last 7 Days Activity */}
+      {/* Dynamic Days Activity */}
       <Card className="border-none shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-lg">Last 7 Days Activity</CardTitle>
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-lg">Last {days} Days Activity</CardTitle>
+          <Select
+            value={String(days)}
+            onValueChange={(value) => setDays(Number(value))}
+          >
+            <SelectTrigger className="w-[120px] mt-2 sm:mt-0">
+              <SelectValue placeholder="Days" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">7 days</SelectItem>
+              <SelectItem value="15">15 days</SelectItem>
+              <SelectItem value="30">30 days</SelectItem>
+            </SelectContent>
+          </Select>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>

@@ -17,10 +17,10 @@ const Logout = () => {
   }
   return (
     <Button
-      variant="link"
+      variant="ghost"
       onClick={handleLogout}
       disabled={loggingOut}
-      className="flex items-start gap-2 h-7"
+      className="flex items-center gap-2 h-7"
     >
       <LogOut className="h-4 w-4" />
       <span className="text-slate-800">
