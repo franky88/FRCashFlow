@@ -226,16 +226,73 @@ export default function TransactionsDataTable({
     },
   });
 
+  function exportToCSV<T extends Record<string, unknown>>(
+    filename: string,
+    rows: T[]
+  ): void {
+    if (rows.length === 0) return;
+
+    const headers = Object.keys(rows[0]) as (keyof T)[];
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        headers
+          .map((header) => {
+            const cell = row[header];
+            return `"${String(cell ?? "").replace(/"/g, '""')}"`;
+          })
+          .join(",")
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+  }
+
   return (
     <Card className="border-none shadow-lg">
       <CardHeader>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <CardTitle className="text-lg">Recent Transactions</CardTitle>
+
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <span className="font-medium">
               {table.getFilteredRowModel().rows.length}
             </span>
             <span>of {records.length} transactions</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hover:bg-indigo-50 hover:text-purple-600"
+              onClick={() => {
+                const currentData = table
+                  .getFilteredRowModel()
+                  .rows.map((r) => {
+                    const {
+                      date,
+                      type,
+                      category,
+                      amount,
+                      petty_cash_reference,
+                      note,
+                    } = r.original;
+                    return {
+                      Date: new Date(date).toLocaleDateString("en-US"),
+                      Type: type,
+                      Category: category,
+                      Amount: amount,
+                      "PC Ref #": petty_cash_reference || "",
+                      Note: note || "",
+                    };
+                  });
+                exportToCSV("transactions.csv", currentData);
+              }}
+            >
+              Download CSV
+            </Button>
           </div>
         </div>
 
