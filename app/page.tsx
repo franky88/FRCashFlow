@@ -54,7 +54,7 @@ export default async function LandingPage() {
               )}
               {!user && (
                 <Link
-                  href="/signup"
+                  href="/login"
                   className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:scale-105 transition-all"
                 >
                   Get Started
@@ -101,7 +101,7 @@ export default async function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
-                  href="/signup"
+                  href="/login"
                   className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:shadow-2xl transform hover:scale-105 transition-all text-center"
                 >
                   Start Free Trial
