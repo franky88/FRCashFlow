@@ -162,16 +162,6 @@ export default function TransactionsDataTable({
       },
     },
     {
-      accessorKey: "petty_cash_reference",
-      enableGlobalFilter: true,
-      header: "PC Ref #",
-      cell: ({ row }) => (
-        <span className="text-sm text-slate-700">
-          {row.getValue("petty_cash_reference") || "-"}
-        </span>
-      ),
-    },
-    {
       accessorKey: "note",
       header: "Note",
       cell: ({ row }) => (
