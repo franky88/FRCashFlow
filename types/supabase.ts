@@ -44,7 +44,6 @@ export interface CashflowRecord {
   category: string;
   amount: number;
   note?: string;
-  petty_cash_reference: string;
   date: string;
   created_at: string;
   updated_at?: string;

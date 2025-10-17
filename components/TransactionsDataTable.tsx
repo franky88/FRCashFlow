@@ -271,20 +271,12 @@ export default function TransactionsDataTable({
                 const currentData = table
                   .getFilteredRowModel()
                   .rows.map((r) => {
-                    const {
-                      date,
-                      type,
-                      category,
-                      amount,
-                      petty_cash_reference,
-                      note,
-                    } = r.original;
+                    const { date, type, category, amount, note } = r.original;
                     return {
                       Date: new Date(date).toLocaleDateString("en-US"),
                       Type: type,
                       Category: category,
                       Amount: amount,
-                      "PC Ref #": petty_cash_reference || "",
                       Note: note || "",
                     };
                   });

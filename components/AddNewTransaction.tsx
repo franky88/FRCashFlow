@@ -35,10 +35,10 @@ const AddNewTransaction = ({
     category: "",
     amount: "",
     note: "",
-    petty_cash_reference: "",
     date: new Date().toISOString().split("T")[0],
   });
   const [open, setOpen] = useState(false);
+
   async function handleAddRecord(e: React.FormEvent) {
     e.preventDefault();
 
@@ -56,10 +56,10 @@ const AddNewTransaction = ({
         category: "",
         amount: "",
         note: "",
-        petty_cash_reference: "",
         date: new Date().toISOString().split("T")[0],
       });
       fetchRecords();
+      setOpen(false);
     } else {
       console.error(error);
     }
@@ -141,20 +141,6 @@ const AddNewTransaction = ({
                 placeholder="Add a note..."
                 value={form.note}
                 onChange={(e) => setForm({ ...form, note: e.target.value })}
-                className="mt-1.5"
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-slate-700">
-                Petty Cash Ref # (Optional)
-              </Label>
-              <Input
-                placeholder="Add a petty cash ref #..."
-                value={form.petty_cash_reference}
-                onChange={(e) =>
-                  setForm({ ...form, petty_cash_reference: e.target.value })
-                }
                 className="mt-1.5"
               />
             </div>
