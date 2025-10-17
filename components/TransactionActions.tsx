@@ -53,7 +53,6 @@ export default function TransactionActions({
     amount: transaction.amount.toString(),
     date: transaction.date,
     note: transaction.note || "",
-    petty_cash_reference: transaction.petty_cash_reference || "",
   });
 
   async function handleUpdate() {
@@ -66,7 +65,6 @@ export default function TransactionActions({
         amount: Number(editForm.amount),
         date: editForm.date,
         note: editForm.note,
-        petty_cash_reference: editForm.petty_cash_reference,
       })
       .eq("id", transaction.id);
 
@@ -198,23 +196,6 @@ export default function TransactionActions({
                 }
                 className="mt-1.5"
                 placeholder="Add a note..."
-              />
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium text-slate-700">
-                Petty Cash Ref # (Optional)
-              </Label>
-              <Input
-                value={editForm.petty_cash_reference}
-                onChange={(e) =>
-                  setEditForm({
-                    ...editForm,
-                    petty_cash_reference: e.target.value,
-                  })
-                }
-                className="mt-1.5"
-                placeholder="Add a petty cash ref..."
               />
             </div>
           </div>
